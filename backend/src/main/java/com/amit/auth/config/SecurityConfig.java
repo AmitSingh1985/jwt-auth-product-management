@@ -25,7 +25,7 @@ public class SecurityConfig {
 
 	    http
 	        .csrf(csrf -> csrf.disable())
-
+	        .cors(cors -> {})
 	        .sessionManagement(session ->
 	            session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 	        )
@@ -33,7 +33,9 @@ public class SecurityConfig {
 	        .authorizeHttpRequests(auth -> auth
 	            .requestMatchers(
 	                "/api/auth/signup",
-	                "/api/auth/login"
+	                "/api/auth/login",
+	                "/api/auth/signup/request-otp",
+	                "/api/auth/signup/verify-otp"
 	            ).permitAll()
 	            
 	            .requestMatchers(

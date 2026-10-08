@@ -1,0 +1,48 @@
+<div class="dashboard-container">
+
+    <div class="dashboard-card">
+
+        <h1>Dashboard</h1>
+
+        <div *ngIf="loading">
+            <p>Loading...</p>
+        </div>
+
+        <div *ngIf="!loading">
+
+            <!-- Dashboard welcome message -->
+            <h2 *ngIf="message">
+                {{ message }}
+            </h2>
+
+            <!-- Error message -->
+            <div *ngIf="errorMessage" class="error">
+                {{ errorMessage }}
+            </div>
+            <div class="products-link">
+                <button type="button" (click)="goToProducts()">
+                    Products
+                </button>
+            </div>
+
+            <!-- Administrator Settings -->
+            <div *ngIf="isAdmin" class="settings-link">
+
+                <button type="button" (click)="goToSettings()">
+                    Settings
+                </button>
+
+            </div>
+
+            <!-- Logout -->
+            <button type="button" (click)="logout()" [disabled]="loggingOut">
+
+                {{ loggingOut ? 'Logging out...' : 'Logout' }}
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>

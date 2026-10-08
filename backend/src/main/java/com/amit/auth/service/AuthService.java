@@ -9,6 +9,7 @@ import com.amit.auth.entity.User;
 import com.amit.auth.repository.UserRepository;
 import com.amit.auth.security.JwtService;
 import com.amit.auth.exception.InvalidCredentialsException;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 public class AuthService {
@@ -18,16 +19,25 @@ public class AuthService {
 	private final JwtService jwtService;
 
 	private final TokenBlacklistService tokenBlacklistService;
+	
+	private final CountryRestrictionService countryRestrictionService;
 
 	public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService,
-			TokenBlacklistService tokenBlacklistService) {
+			TokenBlacklistService tokenBlacklistService, CountryRestrictionService countryRestrictionService) {
 		this.userRepository = userRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.jwtService = jwtService;
 		this.tokenBlacklistService = tokenBlacklistService;
+		this.countryRestrictionService = countryRestrictionService;
 	}
 
-	public User signup(SignupRequest request) {
+	public User signup(SignupRequest request,HttpServletRequest httpServletRequest) {
+		
+		if (!countryRestrictionService.isSignupAllowed(httpServletRequest)) {
+		    throw new RuntimeException(
+		            "Signup is not allowed from your country"
+		    );
+		}
 
 		if (userRepository.existsByUsername(request.getUsername())) {
 			throw new RuntimeException("Username already exists");

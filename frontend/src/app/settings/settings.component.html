@@ -1,0 +1,25 @@
+<div class="settings-container">
+
+    <div class="settings-card">
+
+        <h1>Settings</h1>
+
+        <div *ngIf="loading">
+            Loading...
+        </div>
+
+        <div *ngIf="!loading && message" class="success-message">
+            {{ message }}
+        </div>
+
+        <div *ngIf="!loading && errorMessage" class="error-message">
+            {{ errorMessage }}
+        </div>
+
+        <button type="button" (click)="goToDashboard()">
+            Back to Dashboard
+        </button>
+
+    </div>
+
+</div>
