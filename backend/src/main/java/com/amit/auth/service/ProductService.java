@@ -1,49 +1,90 @@
 package com.amit.auth.service;
 
-import com.amit.auth.entity.Product;
-import com.amit.auth.repository.ProductRepository;
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import com.amit.auth.entity.Product;
+import com.amit.auth.repository.ProductRepository;
 
 @Service
 public class ProductService {
 
-    private final ProductRepository productRepository;
+	private final ProductRepository productRepository;
 
-    public ProductService(ProductRepository productRepository) {
-        this.productRepository = productRepository;
-    }
+	public ProductService(ProductRepository productRepository) {
+		this.productRepository = productRepository;
+	}
 
-    public Product createProduct(Product product) {
-        return productRepository.save(product);
-    }
+	public Product createProduct(Product product) {
+		return productRepository.save(product);
+	}
 
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
-    }
+	public List<Product> getAllProducts() {
+		return productRepository.findAll();
+	}
 
-    public Product getProductById(Long id) {
-        return productRepository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Product not found"));
-    }
+	
+	public Page<Product> getAllProducts(
+	        int page,
+	        int size,
+	        String sortBy,
+	        String direction,
+	        String search) {
 
-    public Product updateProduct(Long id, Product product) {
+	    if (page < 0) {
+	        throw new IllegalArgumentException(
+	                "Page number cannot be negative");
+	    }
 
-        Product existing = getProductById(id);
+	    if (size < 1 || size > 100) {
+	        throw new IllegalArgumentException(
+	                "Page size must be between 1 and 100");
+	    }
 
-        existing.setName(product.getName());
-        existing.setPrice(product.getPrice());
-        existing.setQuantity(product.getQuantity());
+	    if (!java.util.Set.of("id", "name", "price", "quantity")
+	            .contains(sortBy)) {
+	        throw new IllegalArgumentException(
+	                "Invalid sort field");
+	    }
 
-        return productRepository.save(existing);
-    }
+	    Sort sort = "desc".equalsIgnoreCase(direction)
+	            ? Sort.by(sortBy).descending()
+	            : Sort.by(sortBy).ascending();
 
-    public void deleteProduct(Long id) {
+	    Pageable pageable = PageRequest.of(page, size, sort);
 
-        Product existing = getProductById(id);
+	    if (search == null || search.isBlank()) {
+	        return productRepository.findAll(pageable);
+	    }
 
-        productRepository.delete(existing);
-    }
+	    return productRepository.findByNameContainingIgnoreCase(
+	            search.trim(), pageable);
+	}
+
+	public Product getProductById(Long id) {
+		return productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
+	}
+
+	public Product updateProduct(Long id, Product product) {
+
+		Product existing = getProductById(id);
+
+		existing.setName(product.getName());
+		existing.setPrice(product.getPrice());
+		existing.setQuantity(product.getQuantity());
+
+		return productRepository.save(existing);
+	}
+
+	public void deleteProduct(Long id) {
+
+		Product existing = getProductById(id);
+
+		productRepository.delete(existing);
+	}
 }

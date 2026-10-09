@@ -1,157 +1,56 @@
+
 <div class="products-container">
+  <div class="page-header">
+    <div>
+      <h1>Product Management</h1>
+      <p>Manage, search, sort, and organize your products.</p>
+    </div>
 
-  <div class="products-card">
-
-    <div class="products-header">
-      <div>
-        <h1>Products</h1>
-        <p>Manage your products</p>
-      </div>
+    <div class="header-actions">
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="goToDashboard()">
+        Dashboard
+      </button>
 
       <button
         type="button"
-        class="add-button"
+        class="btn btn-primary"
         (click)="openAddForm()">
         + Add Product
       </button>
     </div>
+  </div>
 
-    <!-- Success Message -->
-    <div
-      *ngIf="successMessage"
-      class="success-message">
-      {{ successMessage }}
-    </div>
+  <div *ngIf="errorMessage" class="alert alert-error">
+    {{ errorMessage }}
+  </div>
 
-    <!-- Error Message -->
-    <div
-      *ngIf="errorMessage"
-      class="error-message">
-      {{ errorMessage }}
-    </div>
+  <div *ngIf="successMessage" class="alert alert-success">
+    {{ successMessage }}
+  </div>
 
-    <!-- Loading -->
-    <div
-      *ngIf="loading"
-      class="loading">
-      Loading products...
-    </div>
+  <!-- Add/Edit form -->
+  <section *ngIf="showForm" class="product-form">
+    <h2>{{ editingProduct ? 'Edit Product' : 'Add Product' }}</h2>
 
-    <!-- Product Table -->
-    <div
-      *ngIf="!loading && products.length > 0"
-      class="table-container">
-
-      <table>
-
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Price</th>
-            <th>Quantity</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-
-        <tbody>
-
-          <tr *ngFor="let product of products">
-
-            <td>
-              {{ product.id }}
-            </td>
-
-            <td>
-              {{ product.name }}
-            </td>
-
-            <td>
-              {{ product.price | number:'1.2-2' }}
-            </td>
-
-            <td>
-              {{ product.quantity }}
-            </td>
-
-            <td class="actions">
-
-              <button
-                type="button"
-                class="edit-button"
-                (click)="editProduct(product)">
-                Edit
-              </button>
-
-              <button
-                type="button"
-                class="delete-button"
-                (click)="deleteProduct(product)">
-                Delete
-              </button>
-
-            </td>
-
-          </tr>
-
-        </tbody>
-
-      </table>
-
-    </div>
-
-    <!-- No Products -->
-    <div
-      *ngIf="!loading && products.length === 0"
-      class="no-products">
-
-      <p>No products found.</p>
-
-      <button
-        type="button"
-        class="add-button"
-        (click)="openAddForm()">
-        Add Your First Product
-      </button>
-
-    </div>
-
-    <!-- Add / Edit Form -->
-    <div
-      *ngIf="showForm"
-      class="form-container">
-
-      <h2>
-        {{ editingProduct ? 'Edit Product' : 'Add Product' }}
-      </h2>
-
-      <form
-        (ngSubmit)="saveProduct()"
-        #productForm="ngForm">
-
+    <form (ngSubmit)="saveProduct()" #productForm="ngForm">
+      <div class="form-grid">
         <div class="form-group">
-
-          <label for="name">
-            Product Name
-          </label>
-
+          <label for="name">Product name</label>
           <input
             id="name"
             type="text"
             name="name"
             [(ngModel)]="product.name"
             required
-            maxlength="100"
-            placeholder="Enter product name">
-
+            maxlength="150"
+            placeholder="Enter product name" />
         </div>
 
         <div class="form-group">
-
-          <label for="price">
-            Price
-          </label>
-
+          <label for="price">Price</label>
           <input
             id="price"
             type="number"
@@ -160,16 +59,11 @@
             required
             min="0"
             step="0.01"
-            placeholder="Enter price">
-
+            placeholder="Enter price" />
         </div>
 
         <div class="form-group">
-
-          <label for="quantity">
-            Quantity
-          </label>
-
+          <label for="quantity">Quantity</label>
           <input
             id="quantity"
             type="number"
@@ -178,47 +72,193 @@
             required
             min="0"
             step="1"
-            placeholder="Enter quantity">
-
+            placeholder="Enter quantity" />
         </div>
+      </div>
 
-        <div class="form-actions">
+      <div class="form-actions">
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="saving || productForm.invalid">
+          {{
+            saving
+              ? 'Saving...'
+              : editingProduct
+                ? 'Update Product'
+                : 'Save Product'
+          }}
+        </button>
 
-          <button
-            type="submit"
-            class="save-button"
-            [disabled]="productForm.invalid">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          [disabled]="saving"
+          (click)="cancelForm()">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </section>
 
-            {{ editingProduct ? 'Update Product' : 'Add Product' }}
+  <!-- Search and page size -->
+  <section class="toolbar">
+    <form class="search-form" (ngSubmit)="onSearch()">
+      <input
+        type="text"
+        name="search"
+        [(ngModel)]="search"
+        (keyup.enter)="onSearch()"
+        placeholder="Search product name..." />
 
-          </button>
+      <button type="submit" class="btn btn-primary">
+        Search
+      </button>
 
-          <button
-            type="button"
-            class="cancel-button"
-            (click)="cancelForm()">
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="clearSearch()">
+        Clear
+      </button>
+    </form>
 
-            Cancel
-
-          </button>
-
-        </div>
-
-      </form>
-
+    <div class="page-size-control">
+      <label for="pageSize">Rows per page</label>
+      <select
+        id="pageSize"
+        [ngModel]="pageSize"
+        (ngModelChange)="onPageSizeChange($event)"
+        name="pageSize">
+        <option [ngValue]="5">5</option>
+        <option [ngValue]="10">10</option>
+        <option [ngValue]="25">25</option>
+        <option [ngValue]="50">50</option>
+      </select>
     </div>
+  </section>
 
-    <!-- Back to Dashboard -->
-    <button
-      type="button"
-      class="dashboard-button"
-      (click)="goToDashboard()">
+  <!-- Product table -->
+  <div class="table-wrapper">
+    <table class="products-table">
+      <thead>
+        <tr>
+          <th>
+            <button type="button" class="sort-button" (click)="onSort('id')">
+              ID
+              <span *ngIf="sortBy === 'id'">
+                {{ direction === 'asc' ? '▲' : '▼' }}
+              </span>
+            </button>
+          </th>
 
-      Back to Dashboard
+          <th>
+            <button type="button" class="sort-button" (click)="onSort('name')">
+              Name
+              <span *ngIf="sortBy === 'name'">
+                {{ direction === 'asc' ? '▲' : '▼' }}
+              </span>
+            </button>
+          </th>
 
-    </button>
+          <th>
+            <button type="button" class="sort-button" (click)="onSort('price')">
+              Price
+              <span *ngIf="sortBy === 'price'">
+                {{ direction === 'asc' ? '▲' : '▼' }}
+              </span>
+            </button>
+          </th>
 
+          <th>
+            <button
+              type="button"
+              class="sort-button"
+              (click)="onSort('quantity')">
+              Quantity
+              <span *ngIf="sortBy === 'quantity'">
+                {{ direction === 'asc' ? '▲' : '▼' }}
+              </span>
+            </button>
+          </th>
+
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngIf="loading">
+          <td colspan="5" class="empty-state">Loading products...</td>
+        </tr>
+
+        <tr *ngIf="!loading && products.length === 0">
+          <td colspan="5" class="empty-state">
+            No products found.
+          </td>
+        </tr>
+
+        <tr *ngFor="let product of products">
+          <td>{{ product.id }}</td>
+          <td>{{ product.name }}</td>
+          <td>{{ product.price | number:'1.2-2' }}</td>
+          <td>{{ product.quantity }}</td>
+
+          <td class="actions">
+            <button
+              type="button"
+              class="btn btn-small btn-edit"
+              (click)="editProduct(product)">
+              Edit
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-small btn-delete"
+              (click)="deleteProduct(product.id)">
+              Delete
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
-</div>
+  <!-- Pagination -->
+  <div class="pagination-footer">
+    <p>
+      Total products: <strong>{{ totalElements }}</strong>
+    </p>
 
+    <div class="pagination">
+      <button
+        type="button"
+        class="btn btn-secondary"
+        [disabled]="loading || currentPage === 0"
+        (click)="goToPage(currentPage - 1)">
+        Previous
+      </button>
+
+      <button
+        *ngFor="let page of pages"
+        type="button"
+        class="page-button"
+        [class.active]="page === currentPage"
+        [disabled]="loading"
+        (click)="goToPage(page)">
+        {{ page + 1 }}
+      </button>
+
+      <button
+        type="button"
+        class="btn btn-secondary"
+        [disabled]="loading || currentPage >= totalPages - 1"
+        (click)="goToPage(currentPage + 1)">
+        Next
+      </button>
+    </div>
+
+    <p *ngIf="totalPages > 0">
+      Page {{ currentPage + 1 }} of {{ totalPages }}
+    </p>
+  </div>
+</div>

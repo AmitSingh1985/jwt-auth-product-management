@@ -2,7 +2,7 @@ package com.amit.auth.controller;
 
 import java.util.List;
 
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.amit.auth.dto.ApiResponse;
@@ -34,10 +35,20 @@ public class ProductController {
 		return new ApiResponse<>(true, "Product created successfully", savedProduct);
 	}
 
-	@GetMapping
-	public ApiResponse<List<Product>> getAllProducts() {
+	/*
+	 * @GetMapping public ApiResponse<List<Product>> getAllProducts() {
+	 * 
+	 * return new ApiResponse<>(true, "Products fetched successfully",
+	 * productService.getAllProducts()); }
+	 */
 
-		return new ApiResponse<>(true, "Products fetched successfully", productService.getAllProducts());
+	@GetMapping
+	public ApiResponse<Page<Product>> getAllProducts(@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "id") String sortBy,
+			@RequestParam(defaultValue = "asc") String direction, @RequestParam(required = false) String search) {
+
+		return new ApiResponse<>(true, "Products fetched successfully",
+				productService.getAllProducts(page, size, sortBy, direction, search));
 	}
 
 	@GetMapping("/{id}")
